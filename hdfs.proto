@@ -1,0 +1,162 @@
+option java_package="com.bagl.protobuf";
+
+message OpenFileRequest {
+  optional string fileName = 1; // fileName
+  optional bool forRead = 2; // true, for read; false for write
+}
+
+message OpenFileResponse {
+  optional int32 status = 1; // result of the call
+  optional int32 handle = 2; // file handle. Use this to close file on write
+// for read, the numbers for the various blocks. Not populated in write mode
+  repeated int32 blockNums = 3;  
+}
+
+message CloseFileRequest {
+  optional int32 handle = 1; // obtained from OpenFile
+}
+
+message CloseFileResponse {
+  optional int32 status = 1;
+}
+
+message WriteBlockRequest {
+  optional BlockLocations blockInfo = 1;
+  repeated bytes data = 2;
+}
+
+message WriteBlockResponse {
+  optional int32 status = 1;
+}
+
+message DataNodeLocation {
+  optional string ip = 1	;
+  optional int32 port = 2;
+}
+
+message JobSubmitRequest {
+  optional string mapName = 1; // Java class, or name of C .so
+  optional string reducerName = 2; // Java class, or name of C .so
+  optional string inputFile = 3;
+  optional string outputFile = 4;
+  optional int32 numReduceTasks = 5;
+}
+
+message JobSubmitResponse {
+  optional int32 status = 1;
+  optional int32 jobId = 2;
+}
+
+message JobStatusRequest {
+  optional int32 jobId = 1;
+}
+
+message JobStatusResponse {
+  optional int32 status = 1;
+  optional bool jobDone = 2;
+  optional int32 totalMapTasks = 3;
+  optional int32 numMapTasksStarted = 4;
+  optional int32 totalReduceTasks = 5;
+  optional int32 numReduceTasksStarted = 6;
+}
+
+message MapTaskStatus {
+  optional int32 jobId = 1;
+  optional int32 taskId = 2;
+  optional bool taskCompleted = 3;
+  optional string mapOutputFile = 4;
+}
+
+message ReduceTaskStatus {
+  optional int32 jobId = 1;
+  optional int32 taskId = 2;
+  optional bool taskCompleted = 3;
+}
+
+message HeartBeatRequestMapReduce {
+  optional int32 taskTrackerId = 1;
+  optional int32 numMapSlotsFree = 2;
+  optional int32 numReduceSlotsFree = 3;
+  repeated MapTaskStatus mapStatus = 4;
+  repeated ReduceTaskStatus reduceStatus = 5;
+}
+
+message MapTaskInfo {
+  optional int32 jobId = 1;
+  optional int32 taskId = 2;
+  optional string mapName = 3;
+  repeated BlockLocations inputBlocks = 4;
+}
+
+message ReducerTaskInfo {
+  optional int32 jobId = 1;
+  optional int32 taskId = 2;
+  optional string reducerName = 3;
+  repeated string mapOutputFiles = 4;
+  optional string outputFile = 5;
+}
+
+message HeartBeatResponseMapReduce {
+  optional int32 status = 1;
+  repeated MapTaskInfo mapTasks = 2;
+  repeated ReducerTaskInfo reduceTasks = 3;
+}
+
+message BlockLocations {
+  optional int32 blockNumber = 1;
+  repeated DataNodeLocation locations = 2;
+}
+
+message BlockLocationRequest {
+  repeated int32 blockNums = 1;
+}
+
+message BlockLocationResponse {
+  optional int32 status = 1;
+  repeated BlockLocations blockLocations = 2;
+}
+
+message AssignBlockRequest {
+  optional int32 handle = 1; // obtain using call to OpenFile
+}
+
+message AssignBlockResponse {
+  optional int32 status = 1;
+  optional BlockLocations newBlock = 2;
+}
+
+message ListFilesRequest {
+  optional string dirName = 1; // unused, place holder to support mkdir, etc
+}
+
+message ListFilesResponse {
+  optional int32 status = 1;
+  repeated string fileNames = 2;
+}
+
+message ReadBlockRequest {
+  optional int32 blockNumber = 1;
+}
+
+message ReadBlockResponse {
+  optional int32 status = 1;
+  repeated bytes data = 2;
+}
+
+message BlockReportRequest {
+  optional int32 id = 1; // identity of the DN. All communication to the NN uses the same id
+  optional DataNodeLocation location = 2;
+  repeated int32 blockNumbers = 3;
+}
+
+message BlockReportResponse {
+  repeated int32 status = 1;
+}
+
+message HeartBeatRequest {
+  optional int32 id = 1;
+}
+
+message HeartBeatResponse {
+  optional int32 status = 1;
+}
